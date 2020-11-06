@@ -4,3 +4,8 @@ source-repository-package
   type: git
   location: https://github.com/brendanhay/ede.git
   tag: 5a8756c1b3105af55b055f78ea273d00620a6731
+
+source-repository-package
+  type: git
+  location: https://github.com/k-bx/protocol-buffers.git
+  tag: 215956e84f53d6a188cfb9527dd0b882648a0455
