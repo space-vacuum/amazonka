@@ -1,7 +1,10 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric      #-}
 {-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RecordWildCards    #-}
+{-# LANGUAGE ViewPatterns #-}
 
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
@@ -16,6 +19,18 @@
 -- Portability : non-portable (GHC extensions)
 --
 module Network.AWS.DynamoDB.Types.Product where
+
+import           Data.Coerce
+import Data.List.NonEmpty as NE
+import qualified Data.HashMap.Strict as HM
+import Data.Aeson.Shim
+
+#if MIN_VERSION_aeson(2,0,0)
+import qualified Data.Aeson.KeyMap as KeyMap
+import Data.Aeson.Key
+#else
+type Key = Text
+#endif
 
 import Network.AWS.DynamoDB.Types.Sum
 import Network.AWS.Lens
@@ -1607,7 +1622,7 @@ keysAndAttributes pKeys_ =
     , _kaaAttributesToGet = Nothing
     , _kaaExpressionAttributeNames = Nothing
     , _kaaConsistentRead = Nothing
-    , _kaaKeys = _List1 # pKeys_
+    , _kaaKeys = _List1 # (NE.fromList $ Map . fwd <$> NE.toList pKeys_)
     }
 
 
@@ -1628,8 +1643,18 @@ kaaConsistentRead :: Lens' KeysAndAttributes (Maybe Bool)
 kaaConsistentRead = lens _kaaConsistentRead (\ s a -> s{_kaaConsistentRead = a})
 
 -- | The primary key attribute values that define the items and the attributes associated with the items.
+-- kaaKeys :: Lens' KeysAndAttributes (NonEmpty (KeyMap.KeyMap AttributeValue))
 kaaKeys :: Lens' KeysAndAttributes (NonEmpty (HashMap Text AttributeValue))
-kaaKeys = lens _kaaKeys (\ s a -> s{_kaaKeys = a}) . _List1
+kaaKeys = lens _kaaKeys (\ s a -> s{_kaaKeys = a}) . (_List1 . over fwdBwd)
+
+kaaKeys' :: Lens' KeysAndAttributes (NonEmpty (KeyMap.KeyMap AttributeValue))
+kaaKeys' = lens _kaaKeys (\ s a -> s{_kaaKeys = a}) . _List1
+
+fwdBwd :: Lens' (HashMap Text v) (KeyMap.KeyMap v) 
+fwdBwd = iso fwd bwd
+
+bwdFwd :: Lens' (KeyMap.KeyMap v) (HashMap Text v)
+bwdFwd = iso bwd fwd
 
 instance FromJSON KeysAndAttributes where
         parseJSON

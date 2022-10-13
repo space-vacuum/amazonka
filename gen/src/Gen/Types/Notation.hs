@@ -17,7 +17,7 @@ module Gen.Types.Notation where
 
 import Control.Applicative
 
-import Data.Aeson
+import Data.Aeson hiding (Key)
 import Data.Bifunctor
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Text          (Text)

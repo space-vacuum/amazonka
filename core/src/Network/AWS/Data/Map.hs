@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE DeriveFoldable             #-}
 {-# LANGUAGE DeriveGeneric              #-}
@@ -6,6 +7,7 @@
 {-# LANGUAGE RoleAnnotations            #-}
 {-# LANGUAGE TupleSections              #-}
 {-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE ViewPatterns #-}
 
 -- |
 -- Module      : Network.AWS.Data.Map
@@ -25,6 +27,7 @@ module Network.AWS.Data.Map
 
 import           Control.DeepSeq
 import           Data.Aeson
+import           Data.Aeson.Shim
 import           Data.Bifunctor
 import qualified Data.ByteString             as BS
 import qualified Data.CaseInsensitive        as CI
@@ -32,9 +35,7 @@ import           Data.Coerce
 import           Data.Data                   (Data, Typeable)
 import           Data.Hashable
 import           Data.HashMap.Strict         (HashMap)
-import qualified Data.HashMap.Strict         as Map
 import           Data.Maybe
-import           Data.Semigroup
 import qualified Data.Text.Encoding          as Text
 import           GHC.Exts
 import           GHC.Generics                (Generic)
@@ -47,7 +48,20 @@ import           Network.AWS.Lens            (Iso', iso)
 import           Network.HTTP.Types          (ResponseHeaders)
 import           Text.XML                    (Node)
 
-newtype Map k v = Map { toMap :: HashMap k v }
+#if MIN_VERSION_aeson(2,0,0)
+import qualified Data.Aeson.KeyMap as KM
+#else
+import qualified Data.HashMap.Strict as Map
+import qualified Data.HashMap.Strict as KM
+type Key = Text
+#endif
+
+newtype Map k v =
+#if MIN_VERSION_aeson(2,0,0)
+  Map { toMap :: KM.KeyMap v }
+#else
+  Map { toMap :: HashMap k v }
+#endif
     deriving
         ( Functor
         , Foldable
@@ -64,6 +78,35 @@ newtype Map k v = Map { toMap :: HashMap k v }
 
 type role Map nominal representational
 
+#if MIN_VERSION_aeson(2,0,0)
+_Map :: (Coercible a b, Coercible b a) => Iso' (Map Text a) (HashMap Text b)
+_Map = iso (bwd . coerce . toMap) (Map . fwd . coerce)
+
+instance (Hashable k, Hashable v) => Hashable (Map k v)
+instance (NFData k,   NFData   v) => NFData   (Map k v)
+
+instance (Hashable k, Eq k) => IsList (Map k v) where
+   type Item (Map k v) = (Text, v)
+
+   fromList = Map . fromMapList
+   toList = toMapList . toMap
+
+fromMapList :: [(Text, v)] -> KM.KeyMap v
+fromMapList = KM.fromList . fmap (first fwdKey)
+
+toMapList :: KM.KeyMap c -> [(Text, c)]
+toMapList = fmap (first bwdKey) . KM.toList
+
+instance (Eq k, Hashable k, FromText k, FromJSON v) => FromJSON (Map k v) where
+    parseJSON = withObject "HashMap" (fmap fromList . traverse f . toMapList)
+      where
+        f (k, v) = (,)
+            <$> either fail return (fromText k)
+            <*> parseJSON v
+
+instance (Eq k, Hashable k, ToText k, ToJSON v) => ToJSON (Map k v) where
+    toJSON = Object . fromMapList . map (bimap toText toJSON) . toList
+#else
 _Map :: (Coercible a b, Coercible b a) => Iso' (Map k a) (HashMap k b)
 _Map = iso (coerce . toMap) (Map . coerce)
 
@@ -77,7 +120,7 @@ instance (Hashable k, Eq k) => IsList (Map k v) where
    toList   = Map.toList . toMap
 
 instance (Eq k, Hashable k, FromText k, FromJSON v) => FromJSON (Map k v) where
-    parseJSON = withObject "HashMap" (fmap fromList . traverse f . toList)
+    parseJSON o = withObject "HashMap" (fmap fromList . traverse f $ toList o)
       where
         f (k, v) = (,)
             <$> either fail return (fromText k)
@@ -85,6 +128,7 @@ instance (Eq k, Hashable k, FromText k, FromJSON v) => FromJSON (Map k v) where
 
 instance (Eq k, Hashable k, ToText k, ToJSON v) => ToJSON (Map k v) where
     toJSON = Object . fromList . map (bimap toText toJSON) . toList
+#endif
 
 instance (Eq k, Hashable k, ToByteString k, ToText v) => ToHeader (Map k v) where
     toHeader p = map (bimap k v) . toList

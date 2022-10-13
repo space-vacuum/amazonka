@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric      #-}
 {-# LANGUAGE OverloadedStrings  #-}
@@ -65,6 +66,10 @@ module Network.AWS.DynamoDB.Scan
     , srsConsumedCapacity
     , srsResponseStatus
     ) where
+
+#if MIN_VERSION_aeson(2,0,0)
+import qualified Data.Aeson.KeyMap as KeyMap
+#endif
 
 import Network.AWS.DynamoDB.Types
 import Network.AWS.DynamoDB.Types.Product
@@ -343,7 +348,7 @@ srsScannedCount :: Lens' ScanResponse (Maybe Int)
 srsScannedCount = lens _srsScannedCount (\ s a -> s{_srsScannedCount = a})
 
 -- | An array of item attributes that match the scan criteria. Each element in this array consists of an attribute name and the value for that attribute.
-srsItems :: Lens' ScanResponse [HashMap Text AttributeValue]
+srsItems :: Lens' ScanResponse [KeyMap.KeyMap AttributeValue]
 srsItems = lens _srsItems (\ s a -> s{_srsItems = a}) . _Default . _Coerce
 
 -- | The capacity units consumed by the @Scan@ operation. The data returned includes the total provisioned throughput consumed, along with statistics for the table and any indexes involved in the operation. @ConsumedCapacity@ is only returned if the @ReturnConsumedCapacity@ parameter was specified. For more information, see <http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ProvisionedThroughputIntro.html Provisioned Throughput> in the /Amazon DynamoDB Developer Guide/ .

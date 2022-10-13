@@ -22,9 +22,9 @@ import Control.Applicative
 import Control.Lens
 
 import Data.Aeson
+import Data.Aeson.Shim
 import Data.Aeson.Types
 import Data.Maybe
-import Data.Monoid
 import Data.Text            (Text)
 import Data.Text.Manipulate
 
@@ -102,7 +102,7 @@ instance FromJSON (Retry -> Retry) where
         m <- o .:? "max_attempts"
         d <- o .:? "delay"
         -- FIXME: Currently simply ignoring non '__default__' keys.
-        p <-        (o  .: defKey     <|> pure mempty) >>=
+        p <-        (o  .: fwdKey defKey     <|> pure mempty) >>=
              (\o' -> o' .: "policies" <|> pure mempty)
         return $ \r ->
             Retry' (fromMaybe (r ^. retryAttempts) m)

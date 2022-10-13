@@ -22,7 +22,7 @@ module Gen.AST.Prefix
 
 import Control.Applicative
 import Control.Comonad.Cofree
-import Control.Lens           hiding ((:<))
+import Control.Lens           hiding ((:<), Prefixed(..))
 import Control.Monad.Except
 import Control.Monad.State
 
@@ -30,7 +30,6 @@ import Data.CaseInsensitive (CI)
 import Data.Char            (isLower)
 import Data.Hashable
 import Data.Maybe
-import Data.Monoid
 import Data.Text            (Text)
 import Data.Text.Manipulate
 

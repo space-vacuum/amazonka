@@ -18,18 +18,17 @@ module Gen.AST where
 
 import Control.Arrow
 import Control.Error
-import Control.Lens
+import Control.Lens hiding (Prefixed(..))
 import Control.Monad.Except (throwError)
 import Control.Monad.State
 
-import Data.Monoid
 
 import Gen.AST.Cofree
 import Gen.AST.Data
 import Gen.AST.Override
 import Gen.AST.Prefix
 import Gen.AST.Subst
-import Gen.Formatting
+import Gen.Formatting hiding (replaced)
 import Gen.Types
 
 import qualified Data.HashMap.Strict as Map

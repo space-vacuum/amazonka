@@ -29,6 +29,7 @@ import Control.Monad
 import Control.Monad.Except
 
 import Data.Aeson            hiding (json)
+import Data.Aeson.Shim
 import Data.Bifunctor
 import Data.Functor.Identity
 import Data.Monoid
@@ -102,14 +103,14 @@ populate d Templates{..} l = (encodeString d :/) . dir lib <$> layout
             [ mod "Main" (testImports l) testMainTemplate
             , dir "Test"
                 [ dir "AWS"
-                    [ touch (l ^. serviceAbbrev <> ".hs") testNamespaceTemplate $
+                    [ touch (l ^. serviceAbbrev <> ".hs") testNamespaceTemplate . fwd $
                         fromPairs
                             [ "moduleName" .=
                                 ("Test.AWS." <> l ^. serviceAbbrev)
                             ]
 
                     , dir svc
-                        [ touch "Internal.hs" testInternalTemplate $
+                        [ touch "Internal.hs" testInternalTemplate . fwd $
                             fromPairs
                                 [ "moduleName" .=
                                     ("Test.AWS." <> l ^. serviceAbbrev <> ".Internal")
@@ -140,7 +141,7 @@ populate d Templates{..} l = (encodeString d :/) . dir lib <$> layout
     fixture :: Operation Identity SData a -> [DirTree (Either Error Touch)]
     fixture o =
         [ touch (n <> "Response.proto") blankTemplate mempty
-        , touch (n <> ".yaml")          fixtureRequestTemplate $
+        , touch (n <> ".yaml")          fixtureRequestTemplate . fwd $
             fromPairs
                 [ "method"         .= (o ^. opHTTP . method)
                 , "endpointPrefix" .= (l ^. endpointPrefix)
@@ -181,10 +182,10 @@ module' :: ToJSON a
 module' ns is tmpl f =
     file' (filename $ nsToPath ns) tmpl $ do
         x <- f >>= JS.objectErr (show ns)
-        return $! x <> fromPairs
+        return $! x <> fwd (fromPairs
             [ "moduleName"    .= ns
             , "moduleImports" .= is
-            ]
+            ])
 
 file' :: ToJSON a
       => Path
@@ -193,7 +194,7 @@ file' :: ToJSON a
       -> DirTree (Either Error Rendered)
 file' (encodeString -> p) tmpl f = File p $
     f >>= JS.objectErr p
-      >>= first LText.pack . eitherRender tmpl
+      >>= first LText.pack . eitherRender tmpl . bwd
 
 dir :: Path -> [DirTree a] -> DirTree a
 dir p = Dir (encodeString p)
@@ -203,4 +204,4 @@ write = fmap (second Right)
 
 touch :: Text -> Template -> Object -> DirTree (Either Error Touch)
 touch f tmpl env =
-    File (Text.unpack f) (bimap LText.pack Left (eitherRender tmpl env))
+    File (Text.unpack f) (bimap LText.pack Left (eitherRender tmpl $ bwd env))

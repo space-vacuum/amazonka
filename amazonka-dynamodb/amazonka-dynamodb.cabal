@@ -86,8 +86,11 @@ library
         , Network.AWS.DynamoDB.Types.Sum
 
     build-depends:
-          amazonka-core == 1.6.1.*
+          aeson
+        , aeson-shim
+        , amazonka-core == 1.6.1.*
         , base          >= 4.7     && < 5
+        , unordered-containers
 
 test-suite amazonka-dynamodb-test
     type:              exitcode-stdio-1.0

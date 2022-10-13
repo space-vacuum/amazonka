@@ -19,7 +19,6 @@ import           Data.Conduit
 import qualified Data.Conduit.Binary          as Conduit
 import           Network.AWS.Prelude
 import           System.IO
-import           Data.Void (Void) -- required for < conduit-1.3
 
 -- | Convenience function for obtaining the size of a file.
 getFileSize :: MonadIO m => FilePath -> m Integer

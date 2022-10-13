@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 -- Module      : Gen.JSON
 -- Copyright   : (c) 2013-2018 Brendan Hay
@@ -17,6 +18,7 @@ import Control.Error
 import Control.Monad.Except
 
 import Data.Aeson       hiding (decode)
+import Data.Aeson.Shim
 import Data.Aeson.Types
 import Data.Bifunctor
 import Data.ByteString  (ByteString)
@@ -41,6 +43,7 @@ optional f = readBSFile f `catchError` const (return "{}")
 objectErr :: ToJSON a => String -> a -> Either Error Object
 objectErr n =
       note (format ("Failed to extract JSON object from value " % string) n)
+    . fmap fwd
     . EDE.fromValue
     . toJSON
 
@@ -51,13 +54,14 @@ parse :: FromJSON a => Object -> Either Error a
 parse = first LText.pack . parseEither parseJSON . Object
 
 merge :: [Object] -> Object
-merge = foldl' go mempty
+merge xs = fwd $ foldl' go mempty ys
   where
-    go :: Object -> Object -> Object
+    ys = bwd <$> xs
+
     go = Map.unionWith value
 
     value :: Value -> Value -> Value
     value l r =
         case (l, r) of
-            (Object x, Object y) -> Object (x `go` y)
+            (Object x, Object y) -> Object $ fwd (bwd x `go` bwd y)
             (_,        _)        -> l

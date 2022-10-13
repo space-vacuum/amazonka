@@ -26,7 +26,6 @@ import Control.Lens    hiding (iso, mapping, op, strict)
 
 import Data.Foldable      (foldl', foldr')
 import Data.List.NonEmpty (NonEmpty (..))
-import Data.Monoid        ((<>))
 import Data.String
 import Data.Text          (Text)
 
@@ -141,7 +140,7 @@ lensD f = Exts.sfun (ident l) [] (unguarded rhs) Exts.noBinds
 
 errorS :: Text -> Decl
 errorS n =
-    let cxt    = Exts.CxSingle () (Exts.ClassA () (unqual "AsError") [tyvar "a"])
+    let cxt    = Exts.CxSingle () (Exts.TypeA () $ tycon "Core.AsError" `tyapp` tyvar "a")
         forall = Exts.TyForall () Nothing (Just cxt)
      in Exts.TypeSig () [ident n] . forall $
             tyapp (tyapp (tyapp (tycon "Getting")

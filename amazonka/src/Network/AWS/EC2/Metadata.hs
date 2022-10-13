@@ -63,7 +63,6 @@ import           Control.Monad.Catch
 import           Control.Monad.IO.Class
 import qualified Data.ByteString.Char8  as BS8
 import qualified Data.ByteString.Lazy   as LBS
-import           Data.Monoid
 import qualified Data.Text              as Text
 import           Network.AWS.Data.JSON
 import           Network.AWS.Data.Time

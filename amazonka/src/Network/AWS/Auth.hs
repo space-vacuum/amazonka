@@ -72,7 +72,6 @@ import Control.Monad.Trans.Maybe (MaybeT (..))
 
 import Data.Char   (isSpace)
 import Data.IORef
-import Data.Monoid
 import Data.Time   (diffUTCTime, getCurrentTime)
 
 import Network.AWS.Data.Log

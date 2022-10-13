@@ -34,7 +34,6 @@ import Control.Lens  hiding ((.=))
 
 import Data.Aeson
 import Data.List   (sort, sortOn, (\\))
-import Data.Monoid hiding (Product, Sum)
 import Data.Ord
 import Data.Text   (Text)
 import Data.Time

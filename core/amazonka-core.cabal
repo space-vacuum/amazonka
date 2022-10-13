@@ -79,18 +79,20 @@ library
 
     build-depends:
           aeson                >= 0.8
+        , aeson-shim
         , attoparsec           >= 0.11.3
         , base                 >= 4.7 && < 5
         , bifunctors           >= 4.1
         , bytestring           >= 0.9
         , case-insensitive     >= 1.2
+        , containers
         , conduit              >= 1.1
         , conduit-extra        >= 1.1
         , cryptonite           >= 0.4
         , deepseq              >= 1.4
         , exceptions           >= 0.6
         , hashable             >= 1.2
-        , http-client          >= 0.4 && < 0.7
+        , http-client          >= 0.4
         , http-conduit         >= 2.1.4 && < 3
         , http-types           >= 0.8 && (<0.11 || >=0.12)
         , lens                 >= 4.4
