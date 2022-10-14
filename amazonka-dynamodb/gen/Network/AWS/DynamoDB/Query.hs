@@ -78,6 +78,8 @@ import Network.AWS.Pager
 import Network.AWS.Prelude
 import Network.AWS.Request
 import Network.AWS.Response
+import Network.AWS.Data.Map
+import Control.Lens.Combinators
 
 -- | Represents the input of a @Query@ operation.
 --
@@ -359,7 +361,7 @@ qrsScannedCount = lens _qrsScannedCount (\ s a -> s{_qrsScannedCount = a})
 
 -- | An array of item attributes that match the query criteria. Each element in this array consists of an attribute name and the value for that attribute.
 qrsItems :: Lens' QueryResponse [HashMap Text AttributeValue]
-qrsItems = lens _qrsItems (\ s a -> s{_qrsItems = a}) . _Default . _Coerce
+qrsItems = lens _qrsItems (\ s a -> s{_qrsItems = a}) . _Default . _Coerce . from _HashMap
 
 -- | The capacity units consumed by the @Query@ operation. The data returned includes the total provisioned throughput consumed, along with statistics for the table and any indexes involved in the operation. @ConsumedCapacity@ is only returned if the @ReturnConsumedCapacity@ parameter was specified For more information, see <http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ProvisionedThroughputIntro.html Provisioned Throughput> in the /Amazon DynamoDB Developer Guide/ .
 qrsConsumedCapacity :: Lens' QueryResponse (Maybe ConsumedCapacity)

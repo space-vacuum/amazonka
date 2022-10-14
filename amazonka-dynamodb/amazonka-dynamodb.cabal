@@ -91,6 +91,7 @@ library
         , amazonka-core == 1.6.1.*
         , base          >= 4.7     && < 5
         , unordered-containers
+        , lens
 
 test-suite amazonka-dynamodb-test
     type:              exitcode-stdio-1.0

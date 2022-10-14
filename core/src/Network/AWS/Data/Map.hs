@@ -20,6 +20,10 @@
 module Network.AWS.Data.Map
     ( Map (..)
     , _Map
+    , _NonEmptyList
+    , _HashMap
+    , _FwdBwd
+    , _FwdBwd2
     , parseXMLMap
     , parseHeadersMap
     , toQueryMap
@@ -44,17 +48,42 @@ import           Network.AWS.Data.Headers
 import           Network.AWS.Data.Query
 import           Network.AWS.Data.Text
 import           Network.AWS.Data.XML
-import           Network.AWS.Lens            (Iso', iso)
 import           Network.HTTP.Types          (ResponseHeaders)
 import           Text.XML                    (Node)
+import           Data.List.NonEmpty   (NonEmpty (..))
+import qualified Data.List.NonEmpty as NE
+import Control.Lens.Combinators
 
 #if MIN_VERSION_aeson(2,0,0)
 import qualified Data.Aeson.KeyMap as KM
+import qualified Data.Aeson.KeyMap as KeyMap
 #else
 import qualified Data.HashMap.Strict as Map
 import qualified Data.HashMap.Strict as KM
 type Key = Text
 #endif
+
+_FwdBwd2 :: Iso' (HashMap Text [HashMap Text v]) (KeyMap.KeyMap [KeyMap.KeyMap v])
+_FwdBwd2 = iso 
+  ((fmap . fmap) fwd . fwd)
+  ((fmap . fmap) bwd . bwd)
+
+_FwdBwd :: Iso' (HashMap Text v) (KeyMap.KeyMap v) 
+_FwdBwd = iso fwd bwd
+
+_NonEmptyHashMap :: Iso' (NonEmpty (HashMap Text v)) (NonEmpty (Map k v))
+_NonEmptyHashMap = _HashMap
+
+_ListHashMap :: Iso' [HashMap Text v] [Map k v]
+_ListHashMap = _HashMap
+
+_NonEmptyList :: Iso' (NonEmpty a) [a]
+_NonEmptyList = iso NE.toList NE.fromList
+
+_HashMap :: Functor f => Iso' (f (HashMap Text v)) (f (Map k v))
+_HashMap = iso
+  (fmap (Map . fwd))
+  (fmap (bwd . toMap))
 
 newtype Map k v =
 #if MIN_VERSION_aeson(2,0,0)

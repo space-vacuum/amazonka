@@ -21,7 +21,7 @@
 module Network.AWS.DynamoDB.Types.Product where
 
 import           Data.Coerce
-import Data.List.NonEmpty as NE
+import Control.Lens.Combinators
 import qualified Data.HashMap.Strict as HM
 import Data.Aeson.Shim
 
@@ -35,6 +35,7 @@ type Key = Text
 import Network.AWS.DynamoDB.Types.Sum
 import Network.AWS.Lens
 import Network.AWS.Prelude
+import Network.AWS.Data.Map
 
 -- | Represents an attribute for describing the key schema for the table and indexes.
 --
@@ -1622,7 +1623,7 @@ keysAndAttributes pKeys_ =
     , _kaaAttributesToGet = Nothing
     , _kaaExpressionAttributeNames = Nothing
     , _kaaConsistentRead = Nothing
-    , _kaaKeys = _List1 # (NE.fromList $ Map . fwd <$> NE.toList pKeys_)
+    , _kaaKeys = pKeys_ ^. _HashMap & review _List1
     }
 
 
@@ -1643,18 +1644,8 @@ kaaConsistentRead :: Lens' KeysAndAttributes (Maybe Bool)
 kaaConsistentRead = lens _kaaConsistentRead (\ s a -> s{_kaaConsistentRead = a})
 
 -- | The primary key attribute values that define the items and the attributes associated with the items.
--- kaaKeys :: Lens' KeysAndAttributes (NonEmpty (KeyMap.KeyMap AttributeValue))
 kaaKeys :: Lens' KeysAndAttributes (NonEmpty (HashMap Text AttributeValue))
-kaaKeys = lens _kaaKeys (\ s a -> s{_kaaKeys = a}) . (_List1 . over fwdBwd)
-
-kaaKeys' :: Lens' KeysAndAttributes (NonEmpty (KeyMap.KeyMap AttributeValue))
-kaaKeys' = lens _kaaKeys (\ s a -> s{_kaaKeys = a}) . _List1
-
-fwdBwd :: Lens' (HashMap Text v) (KeyMap.KeyMap v) 
-fwdBwd = iso fwd bwd
-
-bwdFwd :: Lens' (KeyMap.KeyMap v) (HashMap Text v)
-bwdFwd = iso bwd fwd
+kaaKeys = lens _kaaKeys (\ s a -> s{_kaaKeys = a}) . _List1 . from _HashMap
 
 instance FromJSON KeysAndAttributes where
         parseJSON
