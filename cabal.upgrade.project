@@ -1,0 +1,2 @@
+import: amazonka.config
+with-compiler: ghc-9.2.7

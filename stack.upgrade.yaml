@@ -1,4 +1,4 @@
-resolver: lts-18.28
+resolver: lts-20.18
 
 local-bin-path: bin
 
@@ -8,11 +8,6 @@ nix:
   add-gc-roots: true
 
 extra-deps:
-  - ede-0.2.9
-  - text-regex-replace-0.1.1.1
-  - unliftio-core-0.2.0.1
-  - hindent-6.0.0
-  - ghc-lib-parser-9.2.7.20230228
   - git: https://github.com/space-vacuum/aeson-shim
     commit: cd4441016d1946f689ddee6969b9877515610afa
 

@@ -1,3 +1,4 @@
+cabal-version:         3.0
 name:                  amazonka-gen
 version:               1.6.1
 synopsis:              Amazonka Code Generator
@@ -10,7 +11,6 @@ copyright:             Copyright (c) 2013-2017 Brendan Hay
 category:              Network, AWS, Cloud, Distributed Computing
 build-type:            Simple
 extra-source-files:    README.md
-cabal-version:         >= 1.10
 
 description:
     Compiler and generator for Amazonka related AWS SDKs
@@ -66,7 +66,7 @@ executable amazonka-gen
         -fwarn-incomplete-record-updates
 
     build-depends:
-          aeson                >= 2
+          aeson                ^>=1.5.0.0 || >=2.0
         , aeson-shim
         , attoparsec
         , base                 >= 4.9
