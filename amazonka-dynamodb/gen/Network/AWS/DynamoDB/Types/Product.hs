@@ -25,17 +25,17 @@ import Control.Lens.Combinators
 import qualified Data.HashMap.Strict as HM
 import Data.Aeson.Shim
 
+import Network.AWS.DynamoDB.Types.Sum
+import Network.AWS.Lens
+import Network.AWS.Prelude
+import Network.AWS.Data.Map
+
 #if MIN_VERSION_aeson(2,0,0)
 import qualified Data.Aeson.KeyMap as KeyMap
 import Data.Aeson.Key
 #else
 type Key = Text
 #endif
-
-import Network.AWS.DynamoDB.Types.Sum
-import Network.AWS.Lens
-import Network.AWS.Prelude
-import Network.AWS.Data.Map
 
 -- | Represents an attribute for describing the key schema for the table and indexes.
 --

@@ -20,18 +20,20 @@
 module Network.AWS.Data.Map
     ( Map (..)
     , _Map
-    , _NonEmptyList
     , _HashMap
+#if MIN_VERSION_aeson(2,0,0)
+    , _NonEmptyList
     , _FwdBwd
     , _FwdBwd2
+#endif
     , parseXMLMap
     , parseHeadersMap
     , toQueryMap
     ) where
 
 import           Control.DeepSeq
-import           Data.Aeson
 import           Data.Aeson.Shim
+import           Data.Aeson
 import           Data.Bifunctor
 import qualified Data.ByteString             as BS
 import qualified Data.CaseInsensitive        as CI
@@ -63,6 +65,7 @@ import qualified Data.HashMap.Strict as KM
 type Key = Text
 #endif
 
+#if MIN_VERSION_aeson(2,0,0)
 _FwdBwd2 :: Iso' (HashMap Text [HashMap Text v]) (KeyMap.KeyMap [KeyMap.KeyMap v])
 _FwdBwd2 = iso 
   ((fmap . fmap) fwd . fwd)
@@ -76,14 +79,10 @@ _NonEmptyHashMap = _HashMap
 
 _ListHashMap :: Iso' [HashMap Text v] [Map k v]
 _ListHashMap = _HashMap
+#endif
 
 _NonEmptyList :: Iso' (NonEmpty a) [a]
 _NonEmptyList = iso NE.toList NE.fromList
-
-_HashMap :: Functor f => Iso' (f (HashMap Text v)) (f (Map k v))
-_HashMap = iso
-  (fmap (Map . fwd))
-  (fmap (bwd . toMap))
 
 newtype Map k v =
 #if MIN_VERSION_aeson(2,0,0)
@@ -135,6 +134,11 @@ instance (Eq k, Hashable k, FromText k, FromJSON v) => FromJSON (Map k v) where
 
 instance (Eq k, Hashable k, ToText k, ToJSON v) => ToJSON (Map k v) where
     toJSON = Object . fromMapList . map (bimap toText toJSON) . toList
+
+_HashMap :: Functor f => Iso' (f (HashMap Text v)) (f (Map k v))
+_HashMap = iso
+  (fmap (Map . fwd))
+  (fmap (bwd . toMap))
 #else
 _Map :: (Coercible a b, Coercible b a) => Iso' (Map k a) (HashMap k b)
 _Map = iso (coerce . toMap) (Map . coerce)
@@ -149,7 +153,7 @@ instance (Hashable k, Eq k) => IsList (Map k v) where
    toList   = Map.toList . toMap
 
 instance (Eq k, Hashable k, FromText k, FromJSON v) => FromJSON (Map k v) where
-    parseJSON o = withObject "HashMap" (fmap fromList . traverse f $ toList o)
+    parseJSON = withObject "HashMap" (fmap fromList . traverse f . toList)
       where
         f (k, v) = (,)
             <$> either fail return (fromText k)
@@ -157,6 +161,9 @@ instance (Eq k, Hashable k, FromText k, FromJSON v) => FromJSON (Map k v) where
 
 instance (Eq k, Hashable k, ToText k, ToJSON v) => ToJSON (Map k v) where
     toJSON = Object . fromList . map (bimap toText toJSON) . toList
+
+_HashMap :: Functor f => Iso' (f (HashMap Text v)) (f (Map Text v))
+_HashMap = iso (fmap (Map . fwd)) (fmap (bwd . toMap))
 #endif
 
 instance (Eq k, Hashable k, ToByteString k, ToText v) => ToHeader (Map k v) where

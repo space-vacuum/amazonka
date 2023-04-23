@@ -51,7 +51,7 @@ import qualified Data.Text.Encoding           as Text
 import qualified Data.Text.Lazy               as LText
 import qualified Data.Text.Lazy.Encoding      as LText
 import qualified HIndent
-import qualified HIndent.Types                as HIndent
+import qualified HIndent.Config               as HIndent
 import qualified Language.Haskell.Exts.Pretty as Exts
 import qualified Language.Haskell.Exts.Syntax as Exts
 
