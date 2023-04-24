@@ -36,6 +36,7 @@ module Network.AWS.Data.JSON
     ) where
 
 import           Data.Aeson            (eitherDecode, eitherDecode')
+import           Data.Aeson.Shim
 import           Data.Aeson.Types
 import qualified Data.HashMap.Strict   as Map
 import           Network.AWS.Data.Text
@@ -51,12 +52,12 @@ eitherParseJSON = parseEither parseJSON . Object
 
 (.:>) :: FromJSON a => Object -> Text -> Either String a
 (.:>) o k =
-    case Map.lookup k o of
+    case Map.lookup k $ bwd o of
         Nothing -> Left $ "key " ++ show k ++ " not present"
         Just v  -> parseEither parseJSON v
 
 (.?>) :: FromJSON a => Object -> Text -> Either String (Maybe a)
 (.?>) o k =
-    case Map.lookup k o of
+    case Map.lookup k $ bwd o of
         Nothing -> Right Nothing
         Just v  -> parseEither parseJSON v

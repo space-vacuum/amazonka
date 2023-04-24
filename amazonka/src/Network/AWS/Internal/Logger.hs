@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
@@ -29,7 +30,11 @@ module Network.AWS.Internal.Logger
 
 import           Control.Monad
 import           Control.Monad.IO.Class
+#if MIN_VERSION_bytestring(0,10,0)
+import qualified Data.ByteString.Builder as Build
+#else
 import qualified Data.ByteString.Lazy.Builder as Build
+#endif
 import           Data.Monoid
 import           Network.AWS.Data.Log
 import           Network.AWS.Types

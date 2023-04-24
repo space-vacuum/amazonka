@@ -67,7 +67,6 @@ library
         , conduit-extra       >= 1.1
         , directory           >= 1.2
         , exceptions          >= 0.6
-        , http-client         >= 0.4 && < 0.7
         , http-conduit        >= 2.1.7 && < 3
         , http-types          >= 0.8
         , ini                 >= 0.3.5
@@ -83,6 +82,14 @@ library
         , transformers-compat >= 0.3
         , unliftio-core       >= 0.1
         , void                >= 0.1
+
+    if impl(ghc <9)
+      build-depends:
+          http-client         >= 0.4 && < 0.7
+
+    else
+      build-depends:
+          http-client         >= 0.5 && < 0.8
 
 test-suite tests
     type:              exitcode-stdio-1.0

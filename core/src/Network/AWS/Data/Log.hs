@@ -19,7 +19,11 @@ module Network.AWS.Data.Log where
 import qualified Data.ByteString              as BS
 import           Data.ByteString.Builder      (Builder)
 import qualified Data.ByteString.Lazy         as LBS
+#if MIN_VERSION_bytestring(0,10,0)
+import qualified Data.ByteString.Builder as Build
+#else
 import qualified Data.ByteString.Lazy.Builder as Build
+#endif
 import           Data.CaseInsensitive         (CI)
 import qualified Data.CaseInsensitive         as CI
 import           Data.Int

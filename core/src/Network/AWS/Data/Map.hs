@@ -6,6 +6,7 @@
 {-# LANGUAGE RoleAnnotations            #-}
 {-# LANGUAGE TupleSections              #-}
 {-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE ViewPatterns               #-}
 
 -- |
 -- Module      : Network.AWS.Data.Map
@@ -25,6 +26,7 @@ module Network.AWS.Data.Map
 
 import           Control.DeepSeq
 import           Data.Aeson
+import           Data.Aeson.Shim             (bwdKey, fwdKey)
 import           Data.Bifunctor
 import qualified Data.ByteString             as BS
 import qualified Data.CaseInsensitive        as CI
@@ -79,12 +81,12 @@ instance (Hashable k, Eq k) => IsList (Map k v) where
 instance (Eq k, Hashable k, FromText k, FromJSON v) => FromJSON (Map k v) where
     parseJSON = withObject "HashMap" (fmap fromList . traverse f . toList)
       where
-        f (k, v) = (,)
+        f (bwdKey -> k, v) = (,)
             <$> either fail return (fromText k)
             <*> parseJSON v
 
 instance (Eq k, Hashable k, ToText k, ToJSON v) => ToJSON (Map k v) where
-    toJSON = Object . fromList . map (bimap toText toJSON) . toList
+    toJSON = Object . fromList . map (bimap (fwdKey . toText) toJSON) . toList
 
 instance (Eq k, Hashable k, ToByteString k, ToText v) => ToHeader (Map k v) where
     toHeader p = map (bimap k v) . toList
