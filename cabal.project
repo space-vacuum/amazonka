@@ -1,0 +1,2 @@
+import: amazonka.config
+import: https://www.stackage.org/lts-18.28/cabal.config
